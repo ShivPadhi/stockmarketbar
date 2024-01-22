@@ -1,0 +1,52 @@
+# Shivansh Padhi 2024
+#this is in python
+
+import yfinance as yf
+import tkinter as tk
+from tkinter import font
+
+def update_stock_data():
+    symbols = ["SPY", "DIA", "QQQ", "EWU", "EWJ", "MCHI", "INDA"]  # List of ETF symbols to track
+
+    stock_data = []
+
+    for symbol in symbols:
+        stock = yf.Ticker(symbol)
+        data = stock.history(period="2d")  # Fetch data for the current day and the previous day
+
+        if len(data) >= 2:
+            current_price = data["Close"].iloc[-1]
+            previous_close = data["Close"].iloc[-2]  # Get the previous day's closing price
+
+            price_change = current_price - previous_close
+            percent_change = (price_change / previous_close) * 100
+
+            if price_change > 0:
+                stock_data.append((f"{symbol}: {current_price:.2f} (+{percent_change:.2f}%)", "green"))
+            elif price_change < 0:
+                stock_data.append((f"{symbol}: {current_price:.2f} ({percent_change:.2f}%)", "red"))
+            else:
+                stock_data.append((f"{symbol}: {current_price:.2f} ({percent_change:.2f}%)", "white"))
+        else:
+            stock_data.append((f"{symbol}: N/A", "white"))
+
+    label_text.set("  ;  ".join([data[0] for data in stock_data]))
+    for i, data in enumerate(stock_data):
+        label.config(fg=data[1], text=label_text.get().split("  ;  ")[i])
+
+    root.after(60000, update_stock_data)  # Schedule the function to run again after 60 seconds
+
+root = tk.Tk()
+root.title("Stock Market Bar")
+root.configure(bg="black")  # Set background color to black
+
+custom_font = font.Font(family="Railroad", size=14)  # Specify custom font and size
+
+label_text = tk.StringVar()
+
+label = tk.Label(root, textvariable=label_text, font=custom_font, bg="black", padx=10)
+label.pack(pady=10)
+
+update_stock_data()
+
+root.mainloop()
